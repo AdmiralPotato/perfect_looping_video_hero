@@ -27,11 +27,8 @@ var PerfectLoopingVideoHero = function(args){
 
 	this.__go = false;
 	this.__loadedCount = 0;
-	this.__scaledCount = 0;
 	this.__sourceImageList = [];
-	this.__scaledImageList = [];
-	this.__canvas = document.createElement('canvas');
-	this.__canvasContext = this.__canvas.getContext('2d');
+	this.__scaledCanvasList = [];
 	this.__prevFrame = 0;
 
 	this.__animate = function(time){
@@ -69,46 +66,35 @@ PerfectLoopingVideoHero.prototype = {
 	__makeLoadCallback: function(frameIndex){
 		var _this = this;
 		return function(){
-			var image = _this.__scaledImageList[frameIndex] = new Image();
-			image.style.display = 'none';
-			_this.__outputDiv.appendChild(image);
+			var canvas = _this.__scaledCanvasList[frameIndex] = document.createElement('canvas');
+			canvas.style.display = 'none';
+			_this.__outputDiv.appendChild(canvas);
+			_this.__scale(frameIndex);
 
 			_this.__loadedCount++;
-			image.onload = _this.__scaleCallback();
-			_this.__scale(frameIndex);
+			var loaded = _this.__checkLoaded();
+			if(loaded){
+				_this.start();
+			}
 		};
 	},
 	__getImagePath: function(frameIndex){
 		var str = (frameIndex + 1).toString();
 		return this.path + '/' + ('0000'+str).substring(str.length) + '.jpg';
 	},
-	__scaleCallback: function(){
-		var _this = this;
-		return function(){
-			_this.__scaledCount++;
-			var loadedAndScaled = _this.__checkLoadedAndScaled();
-			if(loadedAndScaled){
-				_this.start();
-			}
-		};
-	},
 	__scale: function(frameIndex){
 		var imageSource = this.__sourceImageList[frameIndex];
-		var imageDestination = this.__scaledImageList[frameIndex];
+		var canvas = this.__scaledCanvasList[frameIndex];
+		var canvasContext = canvas.getContext('2d');
 
-		this.__canvas.width = this.__targetWidth;
-		this.__canvas.height = this.__targetHeight;
-		this.__canvasContext.drawImage(imageSource, 0, 0, this.__targetWidth, this.__targetHeight);
-		this.__canvasContext.font = "16px monospace";
-		this.__canvasContext.fillText(frameIndex, 24, 24);
-
-		imageDestination.src = this.__canvas.toDataURL("image/png");
+		canvas.width = this.__targetWidth;
+		canvas.height = this.__targetHeight;
+		canvasContext.drawImage(imageSource, 0, 0, this.__targetWidth, this.__targetHeight);
+		canvasContext.font = "16px monospace";
+		canvasContext.fillText(frameIndex, 24, 24);
 	},
-	__checkLoadedAndScaled: function(){
-		return (
-			this.__loadedCount === this.frames &&
-			this.__scaledCount === this.frames
-		);
+	__checkLoaded: function(){
+		return this.__loadedCount === this.frames;
 	},
 	__frame: render = function(time){
 		if(this.__targetWidth !== this.target.clientWidth){
@@ -119,15 +105,14 @@ PerfectLoopingVideoHero.prototype = {
 			requestAnimationFrame(this.__animate);
 			var currentFrame = Math.floor(time / 1000 / (this.frames / this.fps) * this.frames) % this.frames;
 			if(currentFrame !== this.__prevFrame){
-				this.__scaledImageList[this.__prevFrame].style.display = 'none';
-				this.__scaledImageList[currentFrame].style.display = 'block';
+				this.__scaledCanvasList[this.__prevFrame].style.display = 'none';
+				this.__scaledCanvasList[currentFrame].style.display = 'block';
 				this.__prevFrame = currentFrame;
 			}
 		}
 	},
 	__recache: function(){
 		var _this = this;
-		this.__scaledCount = 0;
 		this.__setTargetResolution();
 		this.__sourceImageList.forEach(function(image, frameIndex){
 			_this.__scale(frameIndex);
