@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Video thing</title>
+	<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=no">
+	<style type="text/css">
+		html {
+			box-sizing: border-box;
+		}
+		*, *:before, *:after {
+			box-sizing: inherit;
+		}
+		html, body{
+			height: 100%;
+			padding: 0;
+			margin: 0;
+		}
+		body *{
+			padding: 0;
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+<div id="videoHero"></div>
+<script src="perfect_looping_video_hero.js"></script>
+<script>
+	var videoHero = new PerfectLoopingVideoHero({
+		path: './content/candy_links_rainbow-48-jpg',
+		frames: 48,
+		fps: 24,
+		resolution: [1920, 1080],
+		target: document.getElementById('videoHero')
+	});
+</script>
+</body>
+</html>
