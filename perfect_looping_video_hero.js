@@ -16,13 +16,14 @@ var PerfectLoopingVideoHero = function(args){
 	this.startFrame = args.startFrame !== undefined ? args.startFrame : 1;
 	this.autoplay = args.autoplay !== undefined ? args.autoplay : true;
 
+	this.__outputDiv = document.createElement('div');
+	this.__outputDiv.style.backgroundColor = '#000';
+	this.target.appendChild(this.__outputDiv);
+
 	this.__aspect = this.resolution[1] / this.resolution[0];
 	this.__targetWidth = 0;
 	this.__targetHeight = 0;
 	this.__setTargetResolution();
-
-	this.__outputDiv = document.createElement('div');
-	this.target.appendChild(this.__outputDiv);
 
 	this.__go = false;
 	this.__loadedCount = 0;
@@ -53,6 +54,7 @@ PerfectLoopingVideoHero.prototype = {
 	__setTargetResolution: function(){
 		this.__targetWidth = this.target.clientWidth;
 		this.__targetHeight = this.__targetWidth * this.__aspect;
+		this.__outputDiv.style.height = Math.floor(this.__targetHeight) + 'px';
 	},
 	__preload: function(){
 		var frameIndex;
@@ -68,7 +70,9 @@ PerfectLoopingVideoHero.prototype = {
 		var _this = this;
 		return function(){
 			var image = _this.__scaledImageList[frameIndex] = new Image();
+			image.style.display = 'none';
 			_this.__outputDiv.appendChild(image);
+
 			_this.__loadedCount++;
 			image.onload = _this.__scaleCallback();
 			_this.__scale(frameIndex);
@@ -115,12 +119,9 @@ PerfectLoopingVideoHero.prototype = {
 			requestAnimationFrame(this.__animate);
 			var currentFrame = Math.floor(time / 1000 / (this.frames / this.fps) * this.frames) % this.frames;
 			if(currentFrame !== this.__prevFrame){
-				this.__scaledImageList[this.__prevFrame].style = 'display: none;';
-				this.__scaledImageList[currentFrame].style = 'display: block;';
+				this.__scaledImageList[this.__prevFrame].style.display = 'none';
+				this.__scaledImageList[currentFrame].style.display = 'block';
 				this.__prevFrame = currentFrame;
-			}
-			if(time > 30000){
-				stop();
 			}
 		}
 	},
