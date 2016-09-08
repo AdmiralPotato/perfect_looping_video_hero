@@ -19,6 +19,10 @@ var PerfectLoopingVideoHero = function(args){
 	this.__outputDiv = document.createElement('div');
 	this.__outputDiv.style.backgroundColor = '#000';
 	this.target.appendChild(this.__outputDiv);
+	this.__canvas = document.createElement('canvas');
+	this.__canvasContext = this.__canvas.getContext('2d');
+	_this.__outputDiv.appendChild(this.__canvas);
+
 
 	this.__aspect = this.resolution[1] / this.resolution[0];
 	this.__targetWidth = 0;
@@ -51,6 +55,8 @@ PerfectLoopingVideoHero.prototype = {
 	__setTargetResolution: function(){
 		this.__targetWidth = this.target.clientWidth;
 		this.__targetHeight = this.__targetWidth * this.__aspect;
+		this.__canvas.width = this.__targetWidth;
+		this.__canvas.height = this.__targetHeight;
 		this.__outputDiv.style.height = Math.floor(this.__targetHeight) + 'px';
 	},
 	__preload: function(){
@@ -67,8 +73,6 @@ PerfectLoopingVideoHero.prototype = {
 		var _this = this;
 		return function(){
 			var canvas = _this.__scaledCanvasList[frameIndex] = document.createElement('canvas');
-			canvas.style.display = 'none';
-			_this.__outputDiv.appendChild(canvas);
 			_this.__scale(frameIndex);
 
 			_this.__loadedCount++;
@@ -105,8 +109,7 @@ PerfectLoopingVideoHero.prototype = {
 			requestAnimationFrame(this.__animate);
 			var currentFrame = Math.floor(time / 1000 / (this.frames / this.fps) * this.frames) % this.frames;
 			if(currentFrame !== this.__prevFrame){
-				this.__scaledCanvasList[this.__prevFrame].style.display = 'none';
-				this.__scaledCanvasList[currentFrame].style.display = 'block';
+				this.__canvasContext.drawImage(this.__scaledCanvasList[currentFrame], 0, 0);
 				this.__prevFrame = currentFrame;
 			}
 		}
