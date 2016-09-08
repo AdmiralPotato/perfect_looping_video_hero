@@ -18,10 +18,32 @@ var PerfectLoopingVideoHero = function(args){
 
 	this.__outputDiv = document.createElement('div');
 	this.__outputDiv.style.backgroundColor = '#000';
-	this.target.appendChild(this.__outputDiv);
+	this.__outputDiv.style.position = 'relative';
 	this.__canvas = document.createElement('canvas');
+	this.__canvas.style.position = 'absolute';
 	this.__canvasContext = this.__canvas.getContext('2d');
-	_this.__outputDiv.appendChild(this.__canvas);
+	this.__outputDiv.appendChild(this.__canvas);
+	this.__progressPositionerDiv = document.createElement('div');
+	this.__progressPositionerDiv.style.position = 'absolute';
+	this.__progressPositionerDiv.style.bottom = '0';
+	this.__progressPositionerDiv.style.width = '100%';
+	this.__progressPositionerDiv.style.margin = 'auto';
+	this.__progressHolderDiv = document.createElement('div');
+	this.__progressHolderDiv.style.overflow = 'hidden';
+	this.__progressHolderDiv.style.margin = '1rem';
+	this.__progressHolderDiv.style.backgroundColor = 'rgba(127,127,127,0.25)';
+	this.__progressHolderDiv.style.boxShadow = '0 0 4px rgba(0,0,0,0.25)';
+	this.__progressHolderDiv.style.border = '1px solid rgba(127,127,127,0.5)';
+	this.__progressHolderDiv.style.borderRadius = '1rem';
+	this.__progressDiv = document.createElement('div');
+	this.__progressDiv.style.height = '1rem';
+	this.__progressDiv.style.width = '1rem';
+	this.__progressDiv.style.backgroundColor = 'rgba(0,255,0,0.25)';
+	this.__progressDiv.style.borderRight = '1px solid 1px solid rgba(127,127,127,0.5)';
+	this.__progressHolderDiv.appendChild(this.__progressDiv);
+	this.__progressPositionerDiv.appendChild(this.__progressHolderDiv);
+	this.__outputDiv.appendChild(this.__progressPositionerDiv);
+	this.target.appendChild(this.__outputDiv);
 
 
 	this.__aspect = this.resolution[1] / this.resolution[0];
@@ -78,9 +100,18 @@ PerfectLoopingVideoHero.prototype = {
 			_this.__loadedCount++;
 			var loaded = _this.__checkLoaded();
 			if(loaded){
+				_this.__progressHolderDiv.style.display = 'none';
 				_this.start();
+			} else {
+				_this.__progressDiv.style.width = ((_this.__loadedCount) / _this.frames) * 100 + '%';
+				if(frameIndex === 0){
+					_this.__renderFrameByIndex(0);
+				}
 			}
 		};
+	},
+	__renderFrameByIndex: function(frameIndex){
+		this.__canvasContext.drawImage(this.__scaledCanvasList[frameIndex], 0, 0);
 	},
 	__getImagePath: function(frameIndex){
 		var str = (frameIndex + 1).toString();
@@ -100,7 +131,7 @@ PerfectLoopingVideoHero.prototype = {
 	__checkLoaded: function(){
 		return this.__loadedCount === this.frames;
 	},
-	__frame: render = function(time){
+	__frame: function(time){
 		if(this.__targetWidth !== this.target.clientWidth){
 			stop();
 			this.__recache();
@@ -109,7 +140,7 @@ PerfectLoopingVideoHero.prototype = {
 			requestAnimationFrame(this.__animate);
 			var currentFrame = Math.floor(time / 1000 / (this.frames / this.fps) * this.frames) % this.frames;
 			if(currentFrame !== this.__prevFrame){
-				this.__canvasContext.drawImage(this.__scaledCanvasList[currentFrame], 0, 0);
+				this.__renderFrameByIndex(currentFrame);
 				this.__prevFrame = currentFrame;
 			}
 		}
